@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Reflection;
 using Dax.Formatter;
 using Dax.Formatter.Models;
 using Dax.Formatter.AnalysisServices;
@@ -18,10 +19,22 @@ public class Program
 public class McpServer
 {
     private readonly DaxFormatterClient _formatter;
+    private static readonly string ApplicationName = "DAX Formatter MCP";
+    private static readonly string ApplicationVersion = GetApplicationVersion();
 
     public McpServer()
     {
-        _formatter = new DaxFormatterClient();
+        // Pass application name and version to help track service usage
+        // This helps SQLBI understand how the DAX Formatter service is being used
+        // through MCP integrations vs other consumption methods
+        _formatter = new DaxFormatterClient(ApplicationName, ApplicationVersion);
+    }
+
+    private static string GetApplicationVersion()
+    {
+        // Get version from assembly, fallback to hardcoded version if needed
+        var version = Assembly.GetExecutingAssembly().GetName().Version;
+        return version?.ToString() ?? "0.0.1";
     }
 
     public async Task RunAsync()
